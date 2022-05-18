@@ -28,14 +28,18 @@ export async function run() {
   }, {
     sequelize,
     modelName: 'Foo',
+    tableName: "foo"
   });
-
   // You can use sinon and chai assertions directly in your SSCCE.
-  const spy = sinon.spy();
-  sequelize.afterBulkSync(() => spy());
+  // const spy = sinon.spy();
   await sequelize.sync({ force: true });
-  expect(spy).to.have.been.called;
+  await Foo.create({ name: "TS foo" });
+  await sequelize.query(`UPDATE "foo" SET "name" = :newName;`, {
+    replacements: {
+      newName: "Working"
+    }
+  });
+  const model = await Foo.findOne();
+  expect(model?.get("name")).eq("Working")
 
-  console.log(await Foo.create({ name: 'TS foo' }));
-  expect(await Foo.count()).to.equal(1);
 }
